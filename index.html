@@ -2,95 +2,55 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sekutyi: Extreme Duty</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekutyi Game</title>
     <style>
-        body { margin: 0; background: #1a1a2e; color: white; font-family: 'Arial', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; touch-action: none; }
-        canvas { background: #16213e; border: 4px solid #4e4e6a; border-radius: 10px; max-width: 95vw; max-height: 60vh; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .ui { margin-bottom: 15px; text-align: center; }
-        .controls { display: flex; gap: 20px; margin-top: 20px; width: 90%; justify-content: center; }
-        button { padding: 25px 45px; font-size: 20px; background: #e94560; border: none; border-radius: 15px; color: white; font-weight: bold; }
+        body { margin: 0; background: #1a1a2e; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        canvas { background: #16213e; border: 4px solid #f1c40f; }
+        .controls { display: flex; gap: 20px; margin-top: 20px; }
+        button { padding: 20px 40px; font-size: 20px; background: #e94560; color: white; border: none; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
-
-    <div class="ui">
-        <div id="stats" style="font-size: 20px;">Skor: 0 | Nyawa: ❤️❤️❤️</div>
-    </div>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-    
+    <div id="status" style="font-size:20px; margin-bottom:10px;">Skor: 0</div>
+    <canvas id="gameCanvas" width="350" height="500"></canvas>
     <div class="controls">
         <button id="leftBtn">◀ KIRI</button>
         <button id="rightBtn">KANAN ▶</button>
     </div>
-
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        let score = 0, lives = 3, gameActive = true;
-        let playerX = 175;
-        let speed = 5;
-        let items = [];
-
-        // Kontrol
+        let score = 0, playerX = 150, items = [];
         let leftPressed = false, rightPressed = false;
-        document.getElementById('leftBtn').addEventListener('touchstart', (e) => { e.preventDefault(); leftPressed = true; });
-        document.getElementById('leftBtn').addEventListener('touchend', () => leftPressed = false);
-        document.getElementById('rightBtn').addEventListener('touchstart', (e) => { e.preventDefault(); rightPressed = true; });
-        document.getElementById('rightBtn').addEventListener('touchend', () => rightPressed = false);
-        document.addEventListener('keydown', (e) => { if(e.key==='ArrowLeft') leftPressed = true; if(e.key==='ArrowRight') rightPressed = true; });
-        document.addEventListener('keyup', (e) => { leftPressed = false; rightPressed = false; });
-
-        function spawnItem() {
-            if (!gameActive) return;
-            const type = Math.random() < 0.7 ? '📦' : '💣'; // 70% paket, 30% bom
-            items.push({ x: Math.random() * 350, y: 0, type: type });
-            setTimeout(spawnItem, 1000 - (score * 5)); // Semakin tinggi skor, semakin cepat muncul
-        }
-
-        function update() {
-            if (!gameActive) return;
-            if (leftPressed && playerX > 0) playerX -= 12;
-            if (rightPressed && playerX < 350) playerX += 12;
-
-            for (let i = items.length - 1; i >= 0; i--) {
-                items[i].y += speed + (score * 0.1);
-                
-                // Cek tangkapan
-                if (items[i].y > 530 && items[i].x > playerX - 30 && items[i].x < playerX + 40) {
-                    if (items[i].type === '📦') {
-                        score += 10;
-                    } else {
-                        lives--;
-                        if (lives <= 0) gameActive = false;
-                    }
-                    items.splice(i, 1);
-                    document.getElementById('stats').innerText = `Skor: ${score} | Nyawa: ${'❤️'.repeat(lives)}`;
-                } else if (items[i].y > 600) {
-                    items.splice(i, 1);
-                }
-            }
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, 400, 600);
-            ctx.font = '50px Arial';
-            ctx.fillText('👮‍♂️', playerX, 580); // Karakter Satpam
+        
+        document.getElementById('leftBtn').ontouchstart = () => leftPressed = true;
+        document.getElementById('leftBtn').ontouchend = () => leftPressed = false;
+        document.getElementById('rightBtn').ontouchstart = () => rightPressed = true;
+        document.getElementById('rightBtn').ontouchend = () => rightPressed = false;
+        
+        function loop() {
+            if (leftPressed && playerX > 0) playerX -= 10;
+            if (rightPressed && playerX < 300) playerX += 10;
+            if (Math.random() < 0.05) items.push({x: Math.random()*300, y: 0});
             
-            items.forEach(it => {
-                ctx.fillText(it.type, it.x, it.y);
+            ctx.clearRect(0, 0, 350, 500);
+            ctx.font = '40px Arial';
+            ctx.fillText('👮‍♂️', playerX, 480);
+            
+            items.forEach((it, i) => {
+                it.y += 5;
+                ctx.fillText('📦', it.x, it.y);
+                if (it.y > 450 && it.x > playerX-20 && it.x < playerX+40) {
+                    items.splice(i, 1);
+                    score += 10;
+                    document.getElementById('status').innerText = "Skor: " + score;
+                }
+                if (it.y > 500) items.splice(i, 1);
             });
-
-            if (!gameActive) {
-                ctx.fillStyle = 'white';
-                ctx.font = '40px Arial';
-                ctx.fillText('GAME OVER!', 80, 300);
-            }
-            requestAnimationFrame(() => { update(); draw(); });
+            requestAnimationFrame(loop);
         }
-
-        spawnItem();
-        draw();
+        loop();
     </script>
 </body>
 </html>
