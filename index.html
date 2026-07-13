@@ -3,95 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sekutyi Game</title>
+    <title>Sekutyi: Extreme Duty</title>
     <style>
-        body { margin: 0; padding: 0; background: #2c3e50; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: sans-serif; touch-action: none; }
-        canvas { background: #34495e; border: 4px solid #f1c40f; display: block; max-width: 95vw; max-height: 70vh; }
-        .ui { margin-bottom: 10px; color: white; font-size: 24px; font-weight: bold; }
-        .controls { display: flex; gap: 40px; margin-top: 15px; width: 100%; justify-content: center; }
-        button { padding: 15px 40px; font-size: 28px; background: #f1c40f; border: none; border-radius: 10px; font-weight: bold; color: #2c3e50; }
-        button:active { background: #f39c12; }
+        body { margin: 0; background: #1a1a2e; color: white; font-family: 'Arial', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; touch-action: none; }
+        canvas { background: #16213e; border: 4px solid #4e4e6a; border-radius: 10px; max-width: 95vw; max-height: 60vh; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .ui { margin-bottom: 15px; text-align: center; }
+        .controls { display: flex; gap: 20px; margin-top: 20px; width: 90%; justify-content: center; }
+        button { padding: 25px 45px; font-size: 20px; background: #e94560; border: none; border-radius: 15px; color: white; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="ui" id="score">Skor: 0</div>
+    <div class="ui">
+        <div id="stats" style="font-size: 20px;">Skor: 0 | Nyawa: ❤️❤️❤️</div>
+    </div>
     <canvas id="gameCanvas" width="400" height="600"></canvas>
     
-    <!-- Tombol ini untuk di HP Android -->
     <div class="controls">
-        <button id="leftBtn">◀</button>
-        <button id="rightBtn">▶</button>
+        <button id="leftBtn">◀ KIRI</button>
+        <button id="rightBtn">KANAN ▶</button>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        let score = 0;
+        let score = 0, lives = 3, gameActive = true;
         let playerX = 175;
-        const playerSpeed = 10;
+        let speed = 5;
         let items = [];
 
-        let leftPressed = false;
-        let rightPressed = false;
-
-        // --- KONTROL HP ANDROID (SENTUH) ---
+        // Kontrol
+        let leftPressed = false, rightPressed = false;
         document.getElementById('leftBtn').addEventListener('touchstart', (e) => { e.preventDefault(); leftPressed = true; });
         document.getElementById('leftBtn').addEventListener('touchend', () => leftPressed = false);
         document.getElementById('rightBtn').addEventListener('touchstart', (e) => { e.preventDefault(); rightPressed = true; });
         document.getElementById('rightBtn').addEventListener('touchend', () => rightPressed = false);
+        document.addEventListener('keydown', (e) => { if(e.key==='ArrowLeft') leftPressed = true; if(e.key==='ArrowRight') rightPressed = true; });
+        document.addEventListener('keyup', (e) => { leftPressed = false; rightPressed = false; });
 
-        // --- KONTROL LAPTOP (KEYBOARD) ---
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftPressed = true;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightPressed = true;
-        });
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftPressed = false;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightPressed = false;
-        });
+        function spawnItem() {
+            if (!gameActive) return;
+            const type = Math.random() < 0.7 ? '📦' : '💣'; // 70% paket, 30% bom
+            items.push({ x: Math.random() * 350, y: 0, type: type });
+            setTimeout(spawnItem, 1000 - (score * 5)); // Semakin tinggi skor, semakin cepat muncul
+        }
 
         function update() {
-            if (leftPressed && playerX > 0) playerX -= playerSpeed;
-            if (rightPressed && playerX < 350) playerX += playerSpeed;
+            if (!gameActive) return;
+            if (leftPressed && playerX > 0) playerX -= 12;
+            if (rightPressed && playerX < 350) playerX += 12;
 
-            if (Math.random() < 0.03) {
-                items.push({ x: Math.random() * 370, y: 0 });
-            }
-
-            for (let index = items.length - 1; index >= 0; index--) {
-                items[index].y += 5;
-                if (items[index].y > 600) { 
-                    items.splice(index, 1); 
-                    continue;
-                }
-                // Deteksi tangkapan kotak kuning
-                if (items[index].y > 510 && items[index].x > playerX - 25 && items[index].x < playerX + 45) {
-                    items.splice(index, 1);
-                    score += 10;
-                    document.getElementById('score').innerText = "Skor: " + score;
+            for (let i = items.length - 1; i >= 0; i--) {
+                items[i].y += speed + (score * 0.1);
+                
+                // Cek tangkapan
+                if (items[i].y > 530 && items[i].x > playerX - 30 && items[i].x < playerX + 40) {
+                    if (items[i].type === '📦') {
+                        score += 10;
+                    } else {
+                        lives--;
+                        if (lives <= 0) gameActive = false;
+                    }
+                    items.splice(i, 1);
+                    document.getElementById('stats').innerText = `Skor: ${score} | Nyawa: ${'❤️'.repeat(lives)}`;
+                } else if (items[i].y > 600) {
+                    items.splice(i, 1);
                 }
             }
         }
 
         function draw() {
             ctx.clearRect(0, 0, 400, 600);
+            ctx.font = '50px Arial';
+            ctx.fillText('👮‍♂️', playerX, 580); // Karakter Satpam
             
-            // Satpam (Kotak Kuning)
-            ctx.fillStyle = '#f1c40f'; 
-            ctx.fillRect(playerX, 540, 50, 50);
-            
-            // Paket (Kotak Merah)
-            ctx.fillStyle = '#e74c3c'; 
-            items.forEach(item => ctx.fillRect(item.x, item.y, 30, 30));
+            items.forEach(it => {
+                ctx.fillText(it.type, it.x, it.y);
+            });
+
+            if (!gameActive) {
+                ctx.fillStyle = 'white';
+                ctx.font = '40px Arial';
+                ctx.fillText('GAME OVER!', 80, 300);
+            }
+            requestAnimationFrame(() => { update(); draw(); });
         }
 
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-        gameLoop();
+        spawnItem();
+        draw();
     </script>
 </body>
 </html>
