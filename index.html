@@ -6,16 +6,19 @@
     <title>Sekutyi Game</title>
     <style>
         body { margin: 0; padding: 0; background: #2c3e50; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: sans-serif; touch-action: none; }
-        canvas { background: #34495e; border: 4px solid #f1c40f; display: block; }
-        .ui { margin-top: 10px; color: white; font-size: 20px; font-weight: bold; }
-        .controls { display: flex; gap: 40px; margin-top: 20px; }
-        button { padding: 20px 40px; font-size: 24px; background: #f1c40f; border: none; border-radius: 10px; font-weight: bold; }
+        canvas { background: #34495e; border: 4px solid #f1c40f; display: block; max-width: 95vw; max-height: 70vh; }
+        .ui { margin-bottom: 10px; color: white; font-size: 24px; font-weight: bold; }
+        .controls { display: flex; gap: 40px; margin-top: 15px; width: 100%; justify-content: center; }
+        button { padding: 15px 40px; font-size: 28px; background: #f1c40f; border: none; border-radius: 10px; font-weight: bold; color: #2c3e50; }
+        button:active { background: #f39c12; }
     </style>
 </head>
 <body>
 
     <div class="ui" id="score">Skor: 0</div>
     <canvas id="gameCanvas" width="400" height="600"></canvas>
+    
+    <!-- Tombol ini untuk di HP Android -->
     <div class="controls">
         <button id="leftBtn">◀</button>
         <button id="rightBtn">▶</button>
@@ -26,46 +29,69 @@
         const ctx = canvas.getContext('2d');
         let score = 0;
         let playerX = 175;
-        const playerSpeed = 15;
+        const playerSpeed = 10;
         let items = [];
 
-        // Kontrol
         let leftPressed = false;
         let rightPressed = false;
 
+        // --- KONTROL HP ANDROID (SENTUH) ---
         document.getElementById('leftBtn').addEventListener('touchstart', (e) => { e.preventDefault(); leftPressed = true; });
         document.getElementById('leftBtn').addEventListener('touchend', () => leftPressed = false);
         document.getElementById('rightBtn').addEventListener('touchstart', (e) => { e.preventDefault(); rightPressed = true; });
         document.getElementById('rightBtn').addEventListener('touchend', () => rightPressed = false);
 
+        // --- KONTROL LAPTOP (KEYBOARD) ---
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftPressed = true;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightPressed = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftPressed = false;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightPressed = false;
+        });
+
         function update() {
             if (leftPressed && playerX > 0) playerX -= playerSpeed;
             if (rightPressed && playerX < 350) playerX += playerSpeed;
 
-            if (Math.random() < 0.05) {
+            if (Math.random() < 0.03) {
                 items.push({ x: Math.random() * 370, y: 0 });
             }
 
-            items.forEach((item, index) => {
-                item.y += 5;
-                if (item.y > 600) { items.splice(index, 1); }
-                if (item.y > 530 && item.x > playerX - 30 && item.x < playerX + 50) {
+            for (let index = items.length - 1; index >= 0; index--) {
+                items[index].y += 5;
+                if (items[index].y > 600) { 
+                    items.splice(index, 1); 
+                    continue;
+                }
+                // Deteksi tangkapan kotak kuning
+                if (items[index].y > 510 && items[index].x > playerX - 25 && items[index].x < playerX + 45) {
                     items.splice(index, 1);
                     score += 10;
                     document.getElementById('score').innerText = "Skor: " + score;
                 }
-            });
+            }
         }
 
         function draw() {
             ctx.clearRect(0, 0, 400, 600);
-            ctx.fillStyle = '#f1c40f'; // Satpam
+            
+            // Satpam (Kotak Kuning)
+            ctx.fillStyle = '#f1c40f'; 
             ctx.fillRect(playerX, 540, 50, 50);
-            ctx.fillStyle = 'red'; // Paket
+            
+            // Paket (Kotak Merah)
+            ctx.fillStyle = '#e74c3c'; 
             items.forEach(item => ctx.fillRect(item.x, item.y, 30, 30));
-            requestAnimationFrame(() => { update(); draw(); });
         }
-        draw();
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
     </script>
 </body>
 </html>
