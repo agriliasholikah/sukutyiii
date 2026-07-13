@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUKUTYI</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, Helvetica, sans-serif;
+        }
+
+        body{
+            background:url("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80");
+            background-size:cover;
+            background-position:center;
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+        }
+
+        .overlay{
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,.7);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+        }
+
+        .menu{
+            width:700px;
+            text-align:center;
+            color:white;
+            padding:40px;
+            background:rgba(20,20,20,.6);
+            border-radius:15px;
+            border:2px solid #00ff99;
+            box-shadow:0 0 25px #00ff99;
+        }
+
+        h1{
+            font-size:60px;
+            color:#00ff99;
+            margin-bottom:20px;
+        }
+
+        p{
+            font-size:18px;
+            line-height:30px;
+            margin-bottom:30px;
+        }
+
+        button{
+            padding:15px 40px;
+            font-size:20px;
+            border:none;
+            border-radius:10px;
+            background:#00ff99;
+            cursor:pointer;
+            transition:.3s;
+        }
+
+        button:hover{
+            transform:scale(1.08);
+            background:#00cc77;
+        }
+
+        footer{
+            margin-top:25px;
+            color:#aaa;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="overlay">
+
+<div class="menu">
+
+<h1>SUKUTYI</h1>
+
+<p>
+Selamat datang di dunia <b>SUKUTYI</b>.<br><br>
+
+Jelajahi pulau misterius yang dipenuhi rahasia kuno, pecahkan teka-teki,
+bertahan hidup dari makhluk Sukutyi, kumpulkan Artefak Cahaya,
+dan kalahkan Raja Sukutyi untuk menghentikan kutukan yang telah berlangsung
+selama ratusan tahun.
+</p>
+
+<button onclick="mulaiGame()">▶ MULAI GAME</button>
+
+<footer>
+Version 1.0 | © 2026 SUKUTYI Studio
+</footer>
+
+</div>
+
+</div>
+
+<script>
+function mulaiGame(){
+    alert("Selamat Datang di SUKUTYI!\n\nPetualanganmu dimulai...");
+    // Nantinya bisa diarahkan ke game.html
+    // window.location.href="game.html";
+}
+</script>
+
+</body>
+</html>
