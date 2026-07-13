@@ -3,65 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sekutyi 2.0</title>
+    <title>Sekutyi 2.0 - Cyber Catch</title>
     <style>
-        body { margin: 0; background: #000; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        canvas { background: #222; border: 4px solid #fff; }
-        .ui { font-size: 24px; color: yellow; margin-bottom: 10px; }
+        body { 
+            margin: 0; 
+            background: #0d0e15; 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            overflow: hidden; 
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .ui { 
+            font-size: 20px; 
+            color: #39ff14; 
+            margin-bottom: 15px; 
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
+            font-weight: bold;
+        }
+        canvas { 
+            background: #111424; 
+            border: 3px solid #39ff14; 
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+            border-radius: 8px;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .btn {
+            padding: 15px 35px; 
+            font-size: 18px; 
+            font-weight: bold;
+            font-family: inherit;
+            background: #1a1d36;
+            color: #00d2ff;
+            border: 2px solid #00d2ff;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+            user-select: none;
+            touch-action: manipulation;
+        }
+        .btn:active {
+            background: #00d2ff;
+            color: #000;
+            box-shadow: 0 0 20px #00d2ff;
+        }
+        #restartBtn {
+            display: none;
+            margin-top: 15px;
+            background: #ff0055;
+            color: white;
+            border-color: #ff0055;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
+        }
     </style>
 </head>
 <body>
-    <div class="ui" id="stats">VERSION 2.0 | Skor: 0 | Nyawa: 3</div>
+
+    <div class="ui" id="stats">VERSION 2.0 | SKOR: 0 | NYAWA: ❤️❤️❤️</div>
+    
     <canvas id="gameCanvas" width="300" height="400"></canvas>
-    <div style="margin-top: 20px;">
-        <button id="leftBtn" style="padding: 20px 40px; font-size: 20px;">◀ KIRI</button>
-        <button id="rightBtn" style="padding: 20px 40px; font-size: 20px;">KANAN ▶</button>
+    
+    <!-- Tombol Restart yang muncul hanya saat Game Over -->
+    <button id="restartBtn" class="btn" onclick="resetGame()">🔄 MAIN LAGI</button>
+
+    <div class="controls" id="moveControls">
+        <button id="leftBtn" class="btn">◀ KIRI</button>
+        <button id="rightBtn" class="btn">KANAN ▶</button>
     </div>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        
         let score = 0, lives = 3, playerX = 125, items = [], gameOver = false;
         let leftPressed = false, rightPressed = false;
         
-        document.getElementById('leftBtn').ontouchstart = () => leftPressed = true;
-        document.getElementById('leftBtn').ontouchend = () => leftPressed = false;
-        document.getElementById('rightBtn').ontouchstart = () => rightPressed = true;
-        document.getElementById('rightBtn').ontouchend = () => rightPressed = false;
+        // Kontrol Sentuh (Mobile) & Klik (PC) agar lebih responsif
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+
+        leftBtn.onmousedown = leftBtn.ontouchstart = (e) => { e.preventDefault(); leftPressed = true; };
+        leftBtn.onmouseup = leftBtn.ontouchend = () => leftPressed = false;
+        rightBtn.onmousedown = rightBtn.ontouchstart = (e) => { e.preventDefault(); rightPressed = true; };
+        rightBtn.onmouseup = rightBtn.ontouchend = () => rightPressed = false;
         
+        // Pembaruan Teks Status dengan Emotikon Nyawa
+        function updateUI() {
+            let heartIcons = "❤️".repeat(Math.max(0, lives));
+            if (lives <= 0) heartIcons = "💀";
+            document.getElementById('stats').innerText = `VERSION 2.0 | SKOR: ${score} | NYAWA: ${heartIcons}`;
+        }
+
+        function resetGame() {
+            score = 0;
+            lives = 3;
+            playerX = 125;
+            items = [];
+            gameOver = false;
+            document.getElementById('restartBtn').style.display = "none";
+            document.getElementById('moveControls').style.display = "flex";
+            updateUI();
+            loop();
+        }
+
+        function drawGameOver() {
+            // Overlay Gelap Transparan
+            ctx.fillStyle = "rgba(13, 14, 21, 0.85)";
+            ctx.fillRect(0, 0, 300, 400);
+
+            // Teks GAME OVER Neon
+            ctx.fillStyle = "#ff0055";
+            ctx.font = "bold 32px 'Courier New'";
+            ctx.textAlign = "center";
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#ff0055";
+            ctx.fillText("GAME OVER", 150, 160);
+            
+            // Teks Skor Akhir
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "18px 'Courier New'";
+            ctx.shadowBlur = 0; // reset shadow
+            ctx.fillText(`Skor Akhir: ${score}`, 150, 210);
+            ctx.fillStyle = "#52789e";
+            ctx.font = "14px 'Courier New'";
+            ctx.fillText("Klik tombol di bawah untuk coba lagi", 150, 240);
+        }
+
         function loop() {
-            if (gameOver) return;
-            if (leftPressed && playerX > 0) playerX -= 15;
-            if (rightPressed && playerX < 250) playerX += 15;
-            if (Math.random() < 0.04) items.push({x: Math.random()*250, y: 0});
+            if (gameOver) {
+                drawGameOver();
+                document.getElementById('restartBtn').style.display = "block";
+                document.getElementById('moveControls').style.display = "none";
+                return;
+            }
+
+            // Pergerakan Player
+            if (leftPressed && playerX > 0) playerX -= 8;
+            if (rightPressed && playerX < 260) playerX += 8;
+            
+            // Spawn Paket Rapor Acak
+            if (Math.random() < 0.03) items.push({x: Math.random() * 260, y: -20});
             
             ctx.clearRect(0, 0, 300, 400);
-            ctx.font = '30px Arial';
+            
+            // Menggambar Player (Sekuty)
+            ctx.textAlign = "left";
+            ctx.font = "34px Arial";
             ctx.fillText('👮', playerX, 380);
             
-            items.forEach((it, i) => {
-                it.y += 8; // Kecepatan paket
+            // Update dan Gambar Paket
+            for (let i = items.length - 1; i >= 0; i--) {
+                let it = items[i];
+                it.y += 5; // Kecepatan paket diseimbangkan agar seru
                 ctx.fillText('📦', it.x, it.y);
                 
-                // Cek Tabrakan
-                if (it.y > 350 && it.x > playerX-20 && it.x < playerX+40) {
+                // Cek Tabrakan Fisik Berhasil Menangkap
+                if (it.y > 340 && it.y < 390 && it.x > playerX - 25 && it.x < playerX + 25) {
                     items.splice(i, 1);
                     score += 10;
-                    document.getElementById('stats').innerText = `VERSION 2.0 | Skor: ${score} | Nyawa: ${lives}`;
+                    updateUI();
                 } 
-                // Cek Kalah
-                else if (it.y > 400) {
+                // Cek Jika Paket Lolos (Gagal Menangkap)
+                else if (it.y > 410) {
                     items.splice(i, 1);
                     lives--;
-                    document.getElementById('stats').innerText = `VERSION 2.0 | Skor: ${score} | Nyawa: ${lives}`;
+                    updateUI();
                     if (lives <= 0) {
                         gameOver = true;
-                        alert("GAME OVER! Skor kamu: " + score);
-                        location.reload();
                     }
                 }
-            });
+            }
+            
             requestAnimationFrame(loop);
         }
+
+        // Jalankan game pertama kali
+        updateUI();
         loop();
     </script>
 </body>
