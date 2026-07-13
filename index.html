@@ -3,25 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sekutyi: Game</title>
+    <title>Sekutyi 2.0</title>
     <style>
-        body { margin: 0; background: #1a1a2e; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        canvas { background: #16213e; border: 4px solid #f1c40f; }
-        .controls { display: flex; gap: 20px; margin-top: 20px; }
-        button { padding: 20px 40px; font-size: 20px; background: #e94560; color: white; border: none; border-radius: 10px; font-weight: bold; }
+        body { margin: 0; background: #000; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        canvas { background: #222; border: 4px solid #fff; }
+        .ui { font-size: 24px; color: yellow; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <div id="status" style="font-size:20px; margin-bottom:10px;">Skor: 0 | Nyawa: ❤️❤️❤️</div>
-    <canvas id="gameCanvas" width="350" height="500"></canvas>
-    <div class="controls">
-        <button id="leftBtn">◀ KIRI</button>
-        <button id="rightBtn">KANAN ▶</button>
+    <div class="ui" id="stats">VERSION 2.0 | Skor: 0 | Nyawa: 3</div>
+    <canvas id="gameCanvas" width="300" height="400"></canvas>
+    <div style="margin-top: 20px;">
+        <button id="leftBtn" style="padding: 20px 40px; font-size: 20px;">◀ KIRI</button>
+        <button id="rightBtn" style="padding: 20px 40px; font-size: 20px;">KANAN ▶</button>
     </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        let score = 0, lives = 3, playerX = 150, items = [], isGameOver = false;
+        let score = 0, lives = 3, playerX = 125, items = [], gameOver = false;
         let leftPressed = false, rightPressed = false;
         
         document.getElementById('leftBtn').ontouchstart = () => leftPressed = true;
@@ -30,34 +29,34 @@
         document.getElementById('rightBtn').ontouchend = () => rightPressed = false;
         
         function loop() {
-            if (isGameOver) return;
+            if (gameOver) return;
+            if (leftPressed && playerX > 0) playerX -= 15;
+            if (rightPressed && playerX < 250) playerX += 15;
+            if (Math.random() < 0.04) items.push({x: Math.random()*250, y: 0});
             
-            if (leftPressed && playerX > 0) playerX -= 12;
-            if (rightPressed && playerX < 300) playerX += 12;
-            if (Math.random() < 0.05) items.push({x: Math.random()*300, y: 0});
-            
-            ctx.clearRect(0, 0, 350, 500);
-            ctx.font = '40px Arial';
-            ctx.fillText('👮‍♂️', playerX, 480);
+            ctx.clearRect(0, 0, 300, 400);
+            ctx.font = '30px Arial';
+            ctx.fillText('👮', playerX, 380);
             
             items.forEach((it, i) => {
-                it.y += 6;
+                it.y += 8; // Kecepatan paket
                 ctx.fillText('📦', it.x, it.y);
                 
-                // Jika tertangkap
-                if (it.y > 430 && it.x > playerX-20 && it.x < playerX+40) {
+                // Cek Tabrakan
+                if (it.y > 350 && it.x > playerX-20 && it.x < playerX+40) {
                     items.splice(i, 1);
                     score += 10;
-                    document.getElementById('status').innerText = `Skor: ${score} | Nyawa: ${'❤️'.repeat(lives)}`;
+                    document.getElementById('stats').innerText = `VERSION 2.0 | Skor: ${score} | Nyawa: ${lives}`;
                 } 
-                // Jika jatuh ke bawah (Meleset)
-                else if (it.y > 500) {
+                // Cek Kalah
+                else if (it.y > 400) {
                     items.splice(i, 1);
                     lives--;
-                    document.getElementById('status').innerText = `Skor: ${score} | Nyawa: ${'❤️'.repeat(lives)}`;
+                    document.getElementById('stats').innerText = `VERSION 2.0 | Skor: ${score} | Nyawa: ${lives}`;
                     if (lives <= 0) {
-                        isGameOver = true;
-                        ctx.fillText('GAME OVER!', 60, 250);
+                        gameOver = true;
+                        alert("GAME OVER! Skor kamu: " + score);
+                        location.reload();
                     }
                 }
             });
