@@ -24,11 +24,32 @@
             text-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
             font-weight: bold;
         }
+        /* Pembungkus untuk menyejajarkan Game dan Logo */
+        .game-container {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Jarak antara game dan kolom logo */
+        }
         canvas { 
             background: #111424; 
             border: 3px solid #39ff14; 
             box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
             border-radius: 8px;
+        }
+        /* Kolom untuk menyusun logo ke bawah */
+        .logo-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* Jarak vertikal antar logo */
+            justify-content: center;
+        }
+        .logo-column img {
+            width: 40px; /* Lebar logo (bisa diganti sesuai selera) */
+            height: 40px; /* Tinggi logo */
+            object-fit: contain; /* Menjaga proporsi logo agar tidak gepeng */
+            border-radius: 4px;
+            border: 1px solid #00d2ff;
+            box-shadow: 0 0 8px rgba(0, 210, 255, 0.3);
         }
         .controls {
             margin-top: 20px;
@@ -68,11 +89,23 @@
 
     <div class="ui" id="stats">VERSION 2.0 | SKOR: 0 | NYAWA: ❤️❤️❤️</div>
     
-    <canvas id="gameCanvas" width="300" height="400"></canvas>
+    <div class="game-container">
+        <!-- Area Game Canvas -->
+        <canvas id="gameCanvas" width="300" height="400"></canvas>
+        
+        <!-- Area Logo Berderet Ke Bawah -->
+        <!-- SILAKAN GANTI nama_file_logo_1.png DLL DENGAN NAMA LOGO KAMU -->
+        <div class="logo-column">
+            <img src="logosekolah.JPEG" alt="Logo 1">
+            <img src="logomoko.JPEG" alt="Logo 2">
+            <img src="logoic.JPEG" alt="Logo 3">
+        </div>
+    </div>
     
-    <!-- Tombol Restart yang muncul hanya saat Game Over -->
+    <!-- Tombol Restart -->
     <button id="restartBtn" class="btn" onclick="resetGame()">🔄 MAIN LAGI</button>
 
+    <!-- Kontrol Game -->
     <div class="controls" id="moveControls">
         <button id="leftBtn" class="btn">◀ KIRI</button>
         <button id="rightBtn" class="btn">KANAN ▶</button>
@@ -85,7 +118,6 @@
         let score = 0, lives = 3, playerX = 125, items = [], gameOver = false;
         let leftPressed = false, rightPressed = false;
         
-        // Kontrol Sentuh (Mobile) & Klik (PC) agar lebih responsif
         const leftBtn = document.getElementById('leftBtn');
         const rightBtn = document.getElementById('rightBtn');
 
@@ -94,7 +126,6 @@
         rightBtn.onmousedown = rightBtn.ontouchstart = (e) => { e.preventDefault(); rightPressed = true; };
         rightBtn.onmouseup = rightBtn.ontouchend = () => rightPressed = false;
         
-        // Pembaruan Teks Status dengan Emotikon Nyawa
         function updateUI() {
             let heartIcons = "❤️".repeat(Math.max(0, lives));
             if (lives <= 0) heartIcons = "💀";
@@ -114,11 +145,9 @@
         }
 
         function drawGameOver() {
-            // Overlay Gelap Transparan
             ctx.fillStyle = "rgba(13, 14, 21, 0.85)";
             ctx.fillRect(0, 0, 300, 400);
 
-            // Teks GAME OVER Neon
             ctx.fillStyle = "#ff0055";
             ctx.font = "bold 32px 'Courier New'";
             ctx.textAlign = "center";
@@ -126,10 +155,9 @@
             ctx.shadowColor = "#ff0055";
             ctx.fillText("GAME OVER", 150, 160);
             
-            // Teks Skor Akhir
             ctx.fillStyle = "#ffffff";
             ctx.font = "18px 'Courier New'";
-            ctx.shadowBlur = 0; // reset shadow
+            ctx.shadowBlur = 0;
             ctx.fillText(`Skor Akhir: ${score}`, 150, 210);
             ctx.fillStyle = "#52789e";
             ctx.font = "14px 'Courier New'";
@@ -144,33 +172,27 @@
                 return;
             }
 
-            // Pergerakan Player
             if (leftPressed && playerX > 0) playerX -= 8;
             if (rightPressed && playerX < 260) playerX += 8;
             
-            // Spawn Paket Rapor Acak
             if (Math.random() < 0.03) items.push({x: Math.random() * 260, y: -20});
             
             ctx.clearRect(0, 0, 300, 400);
             
-            // Menggambar Player (Sekuty)
             ctx.textAlign = "left";
             ctx.font = "34px Arial";
             ctx.fillText('👮', playerX, 380);
             
-            // Update dan Gambar Paket
             for (let i = items.length - 1; i >= 0; i--) {
                 let it = items[i];
-                it.y += 5; // Kecepatan paket diseimbangkan agar seru
+                it.y += 5;
                 ctx.fillText('📦', it.x, it.y);
                 
-                // Cek Tabrakan Fisik Berhasil Menangkap
                 if (it.y > 340 && it.y < 390 && it.x > playerX - 25 && it.x < playerX + 25) {
                     items.splice(i, 1);
                     score += 10;
                     updateUI();
                 } 
-                // Cek Jika Paket Lolos (Gagal Menangkap)
                 else if (it.y > 410) {
                     items.splice(i, 1);
                     lives--;
@@ -184,7 +206,6 @@
             requestAnimationFrame(loop);
         }
 
-        // Jalankan game pertama kali
         updateUI();
         loop();
     </script>
